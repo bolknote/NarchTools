@@ -45,10 +45,12 @@ func getArray(content []byte) (array []string) {
     re, _ := r.Compile(`(?m)^dxo\.itemsValue=\[('[\w-]{3,}.*?')\];$`)
     matches := re.FindSubmatch(content)
 
-    array = strings.Split(string(matches[1]), ",")
+    if len(matches) > 0 {
+        array = strings.Split(string(matches[1]), ",")
 
-    for index, value := range array {
-        array[index] = strings.Trim(value, "'")
+        for index, value := range array {
+            array[index] = strings.Trim(value, "'")
+        }
     }
 
     return
