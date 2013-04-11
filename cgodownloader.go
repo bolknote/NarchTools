@@ -2,7 +2,7 @@ package main
 
 import (
     r "regexp"
-    // "fmt"
+    "fmt"
     "flag"
     "io"
     "io/ioutil"
@@ -12,9 +12,10 @@ import (
     "os"
     "runtime"
     "path"
+    "time"
 )
 
-const url = `http://cgaso.regsamarh.ru/Pages/ImageFile.ashx?level=12&x=0&y=0&tileSize=25600&tileOverlap=1&id=%id&page=0&XHDOC=&archiveId=1`
+const url = `http://cgaso.regsamarh.ru/Pages/ImageFile.ashx?level=12&x=0&y=0&tileSize=25600&tileOverlap=1&id=%s&page=0&XHDOC=&archiveId=1`
 
 func copyUrlToFile(url, filename string) bool {
     if resp, err := http.Get(url); err == nil {
@@ -56,14 +57,6 @@ func getArray(content []byte) (array []string) {
     return
 }
 
-func padZero5(val string) string {
-    if len := len(val); len < 5 {
-        return ("00000" + val)[len:]
-    }
-
-    return val
-}
-
 func main() {
     N := runtime.NumCPU() * 2
 
@@ -73,7 +66,7 @@ func main() {
     if flag.NArg() != 1 {
         selfname := path.Base(os.Args[0])
 
-        os.Stdout.WriteString("Usage: " + selfname + " [-dir=<output dir>] <filename>\n")
+        fmt.Println("Usage: " + selfname + " [-dir=<output dir>] <filename>")
 
         flag.PrintDefaults()
         os.Exit(0)
@@ -89,18 +82,22 @@ func main() {
 
         documents := getArray(content)
 
-        os.Stdout.WriteString("Found " + strconv.Itoa(len(documents)) + " documents.\n")
+        fmt.Println("Found " + strconv.Itoa(len(documents)) + " documents.")
 
         for i, id := range documents {
             ch <- 1
 
             go func(id string, index int) {
-                name := padZero5(strconv.Itoa(index)) + ".jpg"
-                copyUrlToFile(strings.Replace(url, `%id`, id, 1), *dir + "/" + name)
-                os.Stdout.WriteString(name + "\n")
+                name := fmt.Sprintf("%05d.jpg", index)
+                copyUrlToFile(fmt.Sprintf(url, id), *dir + "/" + name)
+                fmt.Println(name)
 
                 <-ch
             }(id, i)
+        }
+
+        for len(ch) > 0 {
+            time.Sleep(100 * time.Millisecond)
         }
     }
 }
