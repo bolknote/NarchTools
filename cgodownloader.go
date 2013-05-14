@@ -15,7 +15,8 @@ import (
     "time"
 )
 
-const url = `http://cgaso.regsamarh.ru/Pages/ImageFile.ashx?level=12&x=0&y=0&tileSize=25600&tileOverlap=1&id=%s&page=0&XHDOC=&archiveId=1`
+const url = `http://%s/Pages/ImageFile.ashx?level=12&x=0&y=0&tileSize=25600&tileOverlap=1&id=%s&page=0&XHDOC=&archiveId=1`
+const defaulthost="cgaso.regsamarh.ru"
 
 func copyUrlToFile(url, filename string) bool {
     if resp, err := http.Get(url); err == nil {
@@ -60,13 +61,14 @@ func getArray(content []byte) (array []string) {
 func main() {
     N := runtime.NumCPU() * 2
 
-    dir := flag.String("dir", ".", "directory to output.")
+    dir  := flag.String("dir", ".", "directory to output.")
+    host := flag.String("host", defaulthost, "address of e-archive")
     flag.Parse()
 
     if flag.NArg() != 1 {
         selfname := path.Base(os.Args[0])
 
-        fmt.Println("Usage: " + selfname + " [-dir=<output dir>] <filename>")
+        fmt.Println("Usage: " + selfname + " [-dir=<output dir>] [-host=<e-archive address>] <filename>")
 
         flag.PrintDefaults()
         os.Exit(0)
@@ -89,7 +91,7 @@ func main() {
 
             go func(id string, index int) {
                 name := fmt.Sprintf("%05d.jpg", index)
-                copyUrlToFile(fmt.Sprintf(url, id), *dir + "/" + name)
+                copyUrlToFile(fmt.Sprintf(url, *host, id), *dir + "/" + name)
                 fmt.Println(name)
 
                 <-ch
