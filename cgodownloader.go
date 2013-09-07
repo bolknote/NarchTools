@@ -8,7 +8,6 @@ import (
     "io/ioutil"
     "strings"
     "net/http"
-    "strconv"
     "os"
     "runtime"
     "path"
@@ -63,12 +62,15 @@ func main() {
 
     dir  := flag.String("dir", ".", "directory to output.")
     host := flag.String("host", defaulthost, "address of e-archive")
+    from := flag.Int("from", 0, "number of start page")
+    to   := flag.Int("to", 0, "number of end page (default - until the end)")
     flag.Parse()
 
     if flag.NArg() != 1 {
         selfname := path.Base(os.Args[0])
 
-        fmt.Println("Usage: " + selfname + " [-dir=<output dir>] [-host=<e-archive address>] <filename>")
+        fmt.Println("Usage: " + selfname +
+        " [-dir=<output dir>] [-host=<e-archive address>] [-from=<start page>] [-to=<end page>] <filename>")
 
         flag.PrintDefaults()
         os.Exit(0)
@@ -83,10 +85,23 @@ func main() {
         ch := make(chan byte, N)
 
         documents := getArray(content)
+        length    := len(documents)
+        if *to == 0 || *to >= length {
+            *to = length - 1
+        }
 
-        fmt.Println("Found " + strconv.Itoa(len(documents)) + " documents.")
+        if *to < *from {
+            fmt.Println("Error: <to> cannot be less than <from>")
+            os.Exit(1)
+        }
 
-        for i, id := range documents {
+        if *to != 0 || *from != 0 {
+            fmt.Printf("Found %d documents (%d to go).\n", length, *to-*from)
+        } else {
+            fmt.Printf("Found %d documents.\n", length)
+        }
+
+        for i := *from; i <= *to; i++ {
             ch <- 1
 
             go func(id string, index int) {
@@ -95,7 +110,7 @@ func main() {
                 fmt.Println(name)
 
                 <-ch
-            }(id, i)
+            }(documents[i], i)
         }
 
         for len(ch) > 0 {
