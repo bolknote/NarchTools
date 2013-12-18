@@ -14,7 +14,7 @@ import (
     "time"
 )
 
-const url = `http://%s/Pages/ImageFile.ashx?level=12&x=0&y=0&tileSize=25600&tileOverlap=1&id=%s&page=0&XHDOC=&archiveId=1`
+const url = `http://%s/Pages/ImageFile.ashx?level=10&x=0&y=0&tileOverlap=1024&id=%s&page=0&XHDOC=&archiveId=1`
 const defaulthost="cgaso.regsamarh.ru"
 
 func copyUrlToFile(url, filename string) bool {
