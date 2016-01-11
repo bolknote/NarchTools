@@ -89,7 +89,7 @@ class Reader
             }
         });
 
-        // Вклеиваем в семьи их участников вместо номидентификаторов
+        // Вклеиваем в семьи их участников вместо идентификаторов
         array_walk($families, function (array &$family) use (&$persons) {
             foreach ($family as $id => $member) {
                 $family[$id] = &$persons[$member];
