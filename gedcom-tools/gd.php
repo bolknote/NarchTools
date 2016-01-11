@@ -156,7 +156,7 @@ class Reader
     public static function render(array $chains):string
     {
     	usort($chains, function (array $f1, array $f2) {
-    		return count($f2) <=> count($f1);
+            return count($f2) <=> count($f1) ?: strcmp(end($f2)[0]['givn'], end($f1)[0]['givn']);
     	});
 
     	$out = '';
